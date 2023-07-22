@@ -22,7 +22,7 @@ import java.util.Queue;
 
 @ComponentScan("com.example.redisserver")
 @Service
-public class receiver implements MessageListener {
+public class receiver implements MessageListener { // mỗi class subscriber một chanel
     @Autowired
     private ProductService productService;
     @Autowired
@@ -30,13 +30,13 @@ public class receiver implements MessageListener {
     ObjectMapper mapper = new ObjectMapper();
     private static final Queue<MessageDTO> messageDTOQueue = new PriorityQueue<>();
 
-
+        // Nhận message của chanel đã subscriber
     @Override
     public void onMessage(Message message, byte[] pattern) {
         try {
             MessageDTO messageDTO = mapper.readValue(message.getBody(), MessageDTO.class);
             System.out.println(" Receive mess by " + messageDTO.getNameServer() + " starting " + messageDTO.getMessDetail());
-            messageDTOQueue.add(messageDTO);
+            messageDTOQueue.add(messageDTO); // add vào queue để message k bị mất
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -44,7 +44,7 @@ public class receiver implements MessageListener {
 
     }
 
-    public ResponseCommon executeQuery() {
+    public ResponseCommon executeQuery() { // mỗi message ứng với một mehtod sẽ đi vào từng case, đầu vào là một MessageDTO
         MessageDTO m = messageDTOQueue.poll();
         if (!(m == null)) {
             System.out.println(m.toString());
@@ -66,7 +66,7 @@ public class receiver implements MessageListener {
         System.out.println("queue empty...........");
         return new ResponseCommon("404", "empty queue", null);
     }
-
+            // method sẽ gọi đến redis queue trước khi dc thực thi
     public ResponseCommon findById(Long id) throws InterruptedException {
         MessageDTO1 messageDTO = new MessageDTO1();
         messageDTO.setNameServer("Product-server");
@@ -79,7 +79,7 @@ public class receiver implements MessageListener {
         messageDTO.setParameters(parameters);
         publisher.publishAtoB(messageDTO);
         //  publisher.publishBtoA(messageDTO);
-        Thread.sleep(5);
+        Thread.sleep(5); // đợi để message được xử lý
         return executeQuery();
     }
 
