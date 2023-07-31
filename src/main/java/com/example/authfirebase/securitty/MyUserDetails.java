@@ -1,0 +1,53 @@
+package com.example.authfirebase.securitty;
+import com.example.authfirebase.Repository.UserRepository;
+import com.example.authfirebase.model.Users;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class MyUserDetails implements UserDetailsService {
+
+  private final UserRepository userRepository;
+
+  @Override
+  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    final List<Users> User = userRepository.findUsersByNameUser(username);
+
+    if (User.isEmpty()) {
+      throw new UsernameNotFoundException("User '" + username + "' not found");
+    }
+    String[] roles = User.get(0).getRole().split("\\|");
+
+    List<SimpleGrantedAuthority> grantedAuthorities = new ArrayList<>();
+    for (String role : roles) {
+      grantedAuthorities.add(new SimpleGrantedAuthority(role));
+    }
+
+    return org.springframework.security.core.userdetails.User//
+        .withUsername(username)
+        .password(User.get(0).getPassWordUser())
+        .authorities(grantedAuthorities)
+        .accountExpired(false)
+        .accountLocked(false)
+        .credentialsExpired(false)
+        .disabled(false)
+        .build();
+  }
+
+//  @Override
+//  public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+//    return null;
+//  }
+}
