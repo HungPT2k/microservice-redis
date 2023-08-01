@@ -1,10 +1,10 @@
 package com.example.authfirebase.Service;
 
-import com.example.authfirebase.DTO.LoginDTO;
-import com.example.authfirebase.DTO.ResponseObject;
-import com.example.authfirebase.DTO.RoleToUser;
+import com.example.authfirebase.DTO.Request.LoginDTO;
+import com.example.authfirebase.DTO.Response.ResponseObject;
+import com.example.authfirebase.DTO.Request.RoleToUser;
 import com.example.authfirebase.model.Users;
-import org.springframework.security.core.userdetails.User;
+import com.example.authfirebase.securitty.oauth2.OAuth2UserInfo;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
@@ -15,11 +15,12 @@ public interface UserService {
     Optional<Users> getById(Long id);
     ResponseObject updateUser(Users newUser,Long id);
     ResponseObject deleteUser(Long id);
-    ResponseObject SignIn(LoginDTO loginRequest);
-    ResponseObject SignUp(Users users);
-    UserDetails ConvertUserToUserDetail(Users users);
-    boolean CheckExitsUser(String userName , String email);
+    ResponseObject signIn(LoginDTO loginRequest);
+    ResponseObject signUp(Users users);
+    UserDetails convertUserToUserDetail(Users users);
+    boolean checkExitsUser(String userName , String email);
     public ResponseObject addRoleForUser(RoleToUser roleToUser);
-    void SaveUserOauth2(String username, String email);
+    Users saveUserOauth2(OAuth2UserInfo oAuth2UserInfo);
+    List<Users> findByEmail(String email);
 
 }

@@ -33,7 +33,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.authorizeRequests()
-                .antMatchers("/user/signin","/user/signup","/user/all","/user/deleteOK/**").permitAll()
+                .antMatchers("/user/signin","/user/signup","/user/deleteOK/**","/user/login_oauth2").permitAll()
                 .antMatchers("/swagger-ui.html", "/swagger-ui/**").permitAll()
                 .anyRequest().authenticated();
         http.exceptionHandling().accessDeniedPage("/login");

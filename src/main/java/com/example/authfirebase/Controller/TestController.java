@@ -1,28 +1,24 @@
 package com.example.authfirebase.Controller;
 
-import com.example.authfirebase.DTO.LoginDTO;
-import com.example.authfirebase.DTO.ResponseObject;
-import com.example.authfirebase.DTO.RoleToUser;
+import com.example.authfirebase.DTO.Request.LoginDTO;
+import com.example.authfirebase.DTO.Response.ResponseObject;
+import com.example.authfirebase.DTO.Request.RoleToUser;
 import com.example.authfirebase.Repository.UserRepository;
 import com.example.authfirebase.Service.UserService;
 import com.example.authfirebase.model.Users;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
 
 
 @RestController
 @RequestMapping("/user")
 
-public class testController {
+public class TestController {
     @Autowired
     private UserService userService;
     @Autowired
@@ -45,12 +41,12 @@ public class testController {
 
     @PostMapping("/signin")
     public ResponseObject login(@RequestBody LoginDTO userRequestDTO) {
-      return userService.SignIn(userRequestDTO);
+      return userService.signIn(userRequestDTO);
     }
 
     @PostMapping("/signup")
     public ResponseObject signup(@RequestBody Users user) {
-     return   userService.SignUp(user);
+     return   userService.signUp(user);
     }
 
     @GetMapping ("/delete/{id}")
@@ -63,22 +59,22 @@ public class testController {
     public ResponseObject addRole(@RequestBody RoleToUser roleToUser){
         return userService.addRoleForUser(roleToUser);
     }
-//    @GetMapping("/hello")
-//    public ResponseObject loginOauth2(@AuthenticationPrincipal OAuth2User principal) {
-////        if (principal != null) {
-////            String name =  principal.getAttribute("name");
-////            String email =  principal.getAttribute("email");
-////            userService.SaveUserOauth2(name,email);
-////       List<Users> users=    userRepository.findUsersByNameUser(name);
-////       if (users.isEmpty()) return new ResponseObject("404","not found",null);
-////            LoginDTO loginDTO = new LoginDTO();
-////            loginDTO.setUserName(users.get(0).getNameUser());
-////            loginDTO.setPassWordUser(users.get(0).getPassWordUser());
-////            return userService.SignIn(loginDTO);
-////
-////        }
-//        String email=principal.getAttribute("email");
-//        System.out.println(email);
-//     return new ResponseObject("404","not found",principal);
-//    }
+    @GetMapping("/login_oauth2")
+    public ResponseObject loginOauth2(@AuthenticationPrincipal OAuth2UserRequest principal) {
+//        if (principal != null) {
+//            String name =  principal.getAttribute("name");
+//            String email =  principal.getAttribute("email");
+//            userService.SaveUserOauth2(name,email);
+//       List<Users> users=    userRepository.findUsersByNameUser(name);
+//       if (users.isEmpty()) return new ResponseObject("404","not found",null);
+//            LoginDTO loginDTO = new LoginDTO();
+//            loginDTO.setUserName(users.get(0).getNameUser());
+//            loginDTO.setPassWordUser(users.get(0).getPassWordUser());
+//            return userService.SignIn(loginDTO);
+//
+//        }
+        String email=principal.getAccessToken().toString();
+        System.out.println(email);
+     return new ResponseObject("404","not found",principal);
+    }
 }

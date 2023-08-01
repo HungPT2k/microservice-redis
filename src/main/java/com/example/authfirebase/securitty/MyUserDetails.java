@@ -2,6 +2,7 @@ package com.example.authfirebase.securitty;
 import com.example.authfirebase.Repository.UserRepository;
 import com.example.authfirebase.model.Users;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -13,7 +14,9 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -46,8 +49,7 @@ public class MyUserDetails implements UserDetailsService {
         .build();
   }
 
-//  @Override
-//  public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-//    return null;
-//  }
+
+
+
 }

@@ -1,4 +1,4 @@
-package com.example.authfirebase.DTO;
+package com.example.authfirebase.DTO.Response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

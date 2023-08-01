@@ -1,37 +1,33 @@
 package com.example.authfirebase.Service.ipml;
 
-import com.example.authfirebase.DTO.LoginDTO;
-import com.example.authfirebase.DTO.ResponseObject;
-import com.example.authfirebase.DTO.RoleToUser;
-import com.example.authfirebase.DTO.UserDTO;
+import com.example.authfirebase.DTO.Request.LoginDTO;
+import com.example.authfirebase.DTO.Request.RoleToUser;
+import com.example.authfirebase.DTO.Response.ResponseObject;
+import com.example.authfirebase.DTO.Response.UserDTO;
 import com.example.authfirebase.Repository.UserRepository;
 import com.example.authfirebase.Service.UserService;
-import com.example.authfirebase.exception.customException;
 import com.example.authfirebase.model.Roles;
 import com.example.authfirebase.model.Users;
-import com.example.authfirebase.securitty.JwtTokenFilter;
 import com.example.authfirebase.securitty.JwtTokenProvider;
 import com.example.authfirebase.securitty.MyUserDetails;
+import com.example.authfirebase.securitty.oauth2.OAuth2UserInfo;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
-public class UserServiceIml implements UserService  {
+public class UserServiceIml implements UserService {
 
     private JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
@@ -57,38 +53,46 @@ public class UserServiceIml implements UserService  {
 
     @Override
     public ResponseObject deleteUser(Long id) {
-       Optional<Users> users= userRepository.findById(id);
-       if (users.isEmpty()) return new ResponseObject("404","Not found",null);
-       if(users.get().getRole().indexOf(Roles.ROLE_SUPERADMIN.toString())>0) return new ResponseObject("403","Not claim",null);
+        Optional<Users> users = userRepository.findById(id);
+        if (users.isEmpty()) return new ResponseObject("404", "Not found", null);
+//       if(users.get().getRole().indexOf(Roles.ROLE_SUPERADMIN.toString())>0) return new ResponseObject("403","Not claim",null);
+        if (users.get().getIsDelete()) {
+            users.get().setIsDelete(false);
+            userRepository.save(users.get());
+            return new ResponseObject("200", "InActive user by id " + id, "");
+        }
         users.get().setIsDelete(true);
         userRepository.save(users.get());
-       return new ResponseObject("200","Delete user by id","");
-        }
+        return new ResponseObject("200", "Active user by id " + id, "");
+    }
 
     @Override
-    public ResponseObject SignIn(LoginDTO userRequest) {
+    public ResponseObject signIn(LoginDTO userRequest) {
         try {
-            String username= userRequest.getUserName();
-            String password=userRequest.getPassWordUser();
+            String username = userRequest.getUserName();
+            String password = userRequest.getPassWordUser();
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
-            UserDetails userDetails =myUserDetails.loadUserByUsername(username);
-            String token= jwtTokenProvider.CreateToken(userDetails);
+            UserDetails userDetails = myUserDetails.loadUserByUsername(username);
+            String token = jwtTokenProvider.CreateToken(userDetails);
             UserDTO user = new UserDTO();
-            user.setUserName(userRepository.findUsersByNameUser(username).get(0).getNameUser());
-            user.setEmail(userRepository.findUsersByNameUser(username).get(0).getEmail());
-            user.setRole(userRepository.findUsersByNameUser(username).get(0).getRole());
+            List<Users> users = userRepository.findUsersByNameUser(username);
+            if (users.isEmpty()) return new ResponseObject("404", "User not found ", null);
+            user.setUserName(users.get(0).getNameUser());
+            user.setEmail(users.get(0).getEmail());
+            user.setRole(users.get(0).getRole());
             user.setToken(token);
-            return new ResponseObject("200","signin successfully ",user);
+            return new ResponseObject("200", "Signin successfully ", user);
         } catch (AuthenticationException e) {
-            return new ResponseObject("400","signin fail, name or pass is wrong ",null);
+            return new ResponseObject("500", "Signin fail, name or pass is wrong ", null);
 
         }
     }
+
     @Override
-    public ResponseObject SignUp(Users appUser) {
-        String name=appUser.getNameUser();
-        String pass=appUser.getPassWordUser();
-        if (CheckExitsUser(name,pass)) {
+    public ResponseObject signUp(Users appUser) {
+        String name = appUser.getNameUser();
+        String pass = appUser.getPassWordUser();
+        if (checkExitsUser(name, pass)) {
             appUser.setPassWordUser(passwordEncoder.encode(pass));
             appUser.setRole(Roles.ROLE_CLIENT.toString());
             appUser.setIsDelete(false);
@@ -98,29 +102,35 @@ public class UserServiceIml implements UserService  {
             user.setEmail(appUser.getEmail());
             user.setRole(appUser.getRole());
             user.setToken("");
-            return new ResponseObject("200","SignUp successfully ",user);
+            return new ResponseObject("200", "SignUp successfully ", user);
         } else {
-            return new ResponseObject("500","SignUp fail ",null);
+            return new ResponseObject("500", "SignUp fail ", null);
         }
     }
+
     @Override
-    public void SaveUserOauth2(String username,String email){
+    public Users saveUserOauth2(OAuth2UserInfo oAuth2UserInfo) {
         Users users = new Users();
         users.setIsDelete(false);
         users.setRole(Roles.ROLE_CLIENT.toString());
-        users.setNameUser(username);
-        users.setEmail(email);
+        users.setNameUser(oAuth2UserInfo.getFirstName()+"_"+oAuth2UserInfo.getLastName());
+        users.setEmail(oAuth2UserInfo.getEmail());
         users.setPassWordUser("Oauth2");
         userRepository.save(users);
         System.out.println("save successfully user login oauth2");
+        return users;
 
     }
 
+    @Override
+    public List<Users> findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
 
 
     @Override
-    public UserDetails ConvertUserToUserDetail(Users users) {
-        if(users==null) {
+    public UserDetails convertUserToUserDetail(Users users) {
+        if (users == null) {
             return null;
         }
         String[] roles = users.getRole().split("\\|");
@@ -129,13 +139,12 @@ public class UserServiceIml implements UserService  {
         for (int i = 0; i < roles.length; i++) {
             grantedAuthorities.add(new SimpleGrantedAuthority(roles[i]));
         }
-        return new User(users.getNameUser(),users.getPassWordUser(),grantedAuthorities);
+        return new User(users.getNameUser(), users.getPassWordUser(), grantedAuthorities);
     }
 
 
-
     @Override
-    public boolean CheckExitsUser(String userName, String email) {
+    public boolean checkExitsUser(String userName, String email) {
         return userRepository.findByEmail(email).isEmpty() && userRepository.findUsersByNameUser(userName).isEmpty();
     }
 
