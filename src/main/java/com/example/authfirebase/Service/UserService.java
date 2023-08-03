@@ -15,12 +15,8 @@ public interface UserService {
     Optional<Users> getById(Long id);
     ResponseObject updateUser(Users newUser,Long id);
     ResponseObject deleteUser(Long id);
-    ResponseObject signIn(LoginDTO loginRequest);
-    ResponseObject signUp(Users users);
     UserDetails convertUserToUserDetail(Users users);
-    boolean checkExitsUser(String userName , String email);
     public ResponseObject addRoleForUser(RoleToUser roleToUser);
-    Users saveUserOauth2(OAuth2UserInfo oAuth2UserInfo);
-    List<Users> findByEmail(String email);
+
 
 }

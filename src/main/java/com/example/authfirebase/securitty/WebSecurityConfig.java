@@ -1,8 +1,11 @@
 package com.example.authfirebase.securitty;
 
-import lombok.RequiredArgsConstructor;
+import com.example.authfirebase.securitty.oauth2.CustomOAuth2UserService;
+import com.example.authfirebase.securitty.oauth2.OAuth2SuccessHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -14,13 +17,19 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 
-
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-@RequiredArgsConstructor
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-    private final JwtTokenProvider jwtTokenProvider;
+    @Autowired
+    @Lazy
+    private JwtTokenProvider jwtTokenProvider;
+    @Autowired
+    @Lazy
+    private OAuth2SuccessHandler oauthSuccessHandler;
+    @Autowired
+    @Lazy
+    private CustomOAuth2UserService oAuth2UserService;
 
     @Override
     public void configure(WebSecurity web) throws Exception {
@@ -33,12 +42,20 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.authorizeRequests()
-                .antMatchers("/user/signin","/user/signup","/user/deleteOK/**","/user/login_oauth2").permitAll()
+                .antMatchers("/user/signin", "/user/signup", "/user/deleteOK/**", "/user/home").permitAll()
                 .antMatchers("/swagger-ui.html", "/swagger-ui/**").permitAll()
-                .anyRequest().authenticated();
+                .anyRequest().authenticated()
+                .and()
+                .oauth2Login()
+                .authorizationEndpoint().baseUri("/oauth2/authorize")
+                .and()
+                .userInfoEndpoint().userService(oAuth2UserService)
+                .and()
+                .successHandler(oauthSuccessHandler);
         http.exceptionHandling().accessDeniedPage("/login");
         http.apply(new JwtTokenFilterConfigurer(jwtTokenProvider));
     }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);

@@ -1,38 +1,51 @@
 package com.example.authfirebase;
 
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
+
 
 @SpringBootApplication
-@EnableSwagger2
+@Configuration
+@OpenAPIDefinition
 public class AuthFirebaseApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(AuthFirebaseApplication.class, args);
     }
+
+    //    @Bean
+//    public Docket productApi() {
+//        return new Docket(DocumentationType.SWAGGER_2)
+//                .select()
+//                .apis(RequestHandlerSelectors.basePackage("come.example.authfirebase"))
+//                .paths(PathSelectors.ant("/user/*"))
+//                .build();
+//    }
     @Bean
-    public Docket productApi() {
-        return new Docket(DocumentationType.SWAGGER_2)
-                .select()
-                .apis(RequestHandlerSelectors.basePackage("come.example.authfirebase"))
-                .paths(PathSelectors.ant("/user/*"))
-                .build();
+    public OpenAPI config() {
+        return new OpenAPI().info(
+                new Info()
+                        .title("")
+                        .version("")
+                        .description("")
+        );
     }
+
     @Bean
-    public WebMvcConfigurer corsConfigurer(){
+    public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
-            public void addCorsMappings(CorsRegistry registry){
+            public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**").allowedOrigins("*")
-                        .allowedHeaders("*").allowedMethods("GET","POST","PUT","DELETE","PATCH");
+                        .allowedHeaders("*").allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH");
             }
 
         };
