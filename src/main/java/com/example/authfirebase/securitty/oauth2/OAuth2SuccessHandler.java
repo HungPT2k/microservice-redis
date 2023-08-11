@@ -46,6 +46,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String uri = UriComponentsBuilder.fromUriString("http://localhost:8080/user/home")
                 .queryParam("token", token)
                 .build().toUriString();
+        response.setHeader("token",token);
+        response.addHeader("token",token);
         getRedirectStrategy().sendRedirect(request, response, uri);
     }
 

@@ -1,8 +1,8 @@
 package com.example.authfirebase.Service.ipml;
 
-import com.example.authfirebase.DTO.Request.LoginDTO;
-import com.example.authfirebase.DTO.Response.ResponseObject;
-import com.example.authfirebase.DTO.Response.UserDTO;
+import com.example.authfirebase.DTO.Request.LoginRequestDTO;
+import com.example.authfirebase.DTO.Response.ResponseObjectDTO;
+import com.example.authfirebase.DTO.Response.UserResponseDTO;
 import com.example.authfirebase.Repository.UserRepository;
 import com.example.authfirebase.Service.AuthService;
 import com.example.authfirebase.model.Roles;
@@ -29,29 +29,29 @@ public class AuthServiceIml implements AuthService {
     private final MyUserDetails myUserDetails;
 
     @Override
-    public ResponseObject signIn(LoginDTO userRequest) {
+    public ResponseObjectDTO signIn(LoginRequestDTO userRequest) {
         try {
             String username = userRequest.getUserName();
             String password = userRequest.getPassWordUser();
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
             UserDetails userDetails = myUserDetails.loadUserByUsername(username);
             String token = jwtTokenProvider.CreateToken(userDetails);
-            UserDTO user = new UserDTO();
+            UserResponseDTO user = new UserResponseDTO();
             List<Users> users = userRepository.findUsersByNameUser(username);
-            if (users.isEmpty()) return new ResponseObject("404", "User not found ", null);
+            if (users.isEmpty()) return new ResponseObjectDTO("404", "User not found ", null);
             user.setUserName(users.get(0).getNameUser());
             user.setEmail(users.get(0).getEmail());
             user.setRole(users.get(0).getRole());
             user.setToken(token);
-            return new ResponseObject("200", "Signin successfully ", user);
+            return new ResponseObjectDTO("200", "Signin successfully ", user);
         } catch (AuthenticationException e) {
-            return new ResponseObject("500", "Signin fail, name or pass is wrong ", null);
+            return new ResponseObjectDTO("500", "Signin fail, name or pass is wrong ", null);
 
         }
     }
 
     @Override
-    public ResponseObject signUp(Users appUser) {
+    public ResponseObjectDTO signUp(Users appUser) {
         String name = appUser.getNameUser();
         String pass = appUser.getPassWordUser();
         if (checkExitsUser(name, pass)) {
@@ -59,14 +59,14 @@ public class AuthServiceIml implements AuthService {
             appUser.setRole(Roles.ROLE_CLIENT.toString());
             appUser.setIsDelete(false);
             userRepository.save(appUser);
-            UserDTO user = new UserDTO();
+            UserResponseDTO user = new UserResponseDTO();
             user.setUserName(appUser.getNameUser());
             user.setEmail(appUser.getEmail());
             user.setRole(appUser.getRole());
             user.setToken("");
-            return new ResponseObject("200", "SignUp successfully ", user);
+            return new ResponseObjectDTO("200", "SignUp successfully ", user);
         } else {
-            return new ResponseObject("500", "SignUp fail ", null);
+            return new ResponseObjectDTO("500", "SignUp fail ", null);
         }
     }
 
@@ -74,8 +74,8 @@ public class AuthServiceIml implements AuthService {
     public Users saveUserOauth2(OAuth2UserInfo oAuth2UserInfo) {
         Users users = new Users();
         users.setIsDelete(false);
-        users.setFirstName(oAuth2UserInfo.getFirstName());
-        users.setLastName(oAuth2UserInfo.getLastName());
+//        users.setFirstName(oAuth2UserInfo.getFirstName());
+//        users.setLastName(oAuth2UserInfo.getLastName());
         users.setRole(Roles.ROLE_CLIENT.toString());
         users.setNameUser("google");
         users.setEmail(oAuth2UserInfo.getEmail());

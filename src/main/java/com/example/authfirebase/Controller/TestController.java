@@ -1,20 +1,17 @@
 package com.example.authfirebase.Controller;
 
-import com.example.authfirebase.DTO.Request.LoginDTO;
-import com.example.authfirebase.DTO.Response.ResponseObject;
-import com.example.authfirebase.DTO.Request.RoleToUser;
+import com.example.authfirebase.DTO.Request.LoginRequestDTO;
+import com.example.authfirebase.DTO.Response.ResponseObjectDTO;
+import com.example.authfirebase.DTO.Request.AddRoleRequestDTO;
 import com.example.authfirebase.Repository.UserRepository;
 import com.example.authfirebase.Service.AuthService;
 import com.example.authfirebase.Service.UserService;
 import com.example.authfirebase.model.Users;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 
@@ -45,29 +42,29 @@ public class TestController {
     }
 
     @PostMapping("/signin")
-    public ResponseObject login(@RequestBody LoginDTO userRequestDTO) {
+    public ResponseObjectDTO login(@RequestBody LoginRequestDTO userRequestDTO) {
       return authService.signIn(userRequestDTO);
     }
 
     @PostMapping("/signup")
-    public ResponseObject signup(@RequestBody Users user) {
+    public ResponseObjectDTO signup(@RequestBody Users user) {
      return   authService.signUp(user);
     }
 
     @GetMapping ("/delete/{id}")
     @PreAuthorize("hasRole('ROLE_SUPERADMIN')")
-    public ResponseObject deleteUser(@PathVariable Long id){
+    public ResponseObjectDTO deleteUser(@PathVariable Long id){
         return userService.deleteUser(id);
     }
     @PostMapping("/addRole")
     @PreAuthorize("hasRole('ROLE_SUPERADMIN')")
-    public ResponseObject addRole(@RequestBody RoleToUser roleToUser){
-        return userService.addRoleForUser(roleToUser);
+    public ResponseObjectDTO addRole(@RequestBody AddRoleRequestDTO addRoleRequestDTO){
+        return userService.addRoleForUser(addRoleRequestDTO);
     }
 
     @GetMapping("/home")
-    public ResponseObject loginOauth2() {
-
-     return new ResponseObject("200","Login oauth2 successfully",null);
+    public ResponseObjectDTO loginOauth2(HttpServletResponse httpServletResponse) {
+        System.out.println(httpServletResponse.getHeader("token"));
+     return new ResponseObjectDTO("200","Login oauth2 successfully",null);
     }
 }
